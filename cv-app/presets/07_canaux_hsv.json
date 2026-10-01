@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "nom": "Exploration HSV : teinte décalée et saturation poussée (TP2 §1.3)",
+  "etapes": [
+    {
+      "filtre": "ajuster_hsv",
+      "actif": true,
+      "parametres": {
+        "decalage_teinte": 30,
+        "gain_saturation": 1.6,
+        "gain_valeur": 1.0
+      }
+    },
+    {
+      "filtre": "trace_histogramme",
+      "actif": true,
+      "parametres": {
+        "mode": "Histogramme",
+        "echelle": "Linéaire",
+        "largeur": 640,
+        "hauteur": 400
+      }
+    }
+  ]
+}

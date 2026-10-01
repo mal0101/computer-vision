@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "nom": "Effet dessin : bilatéral + posterisation + accentuation",
+  "etapes": [
+    {
+      "filtre": "filtre_bilateral",
+      "actif": true,
+      "parametres": {
+        "diametre": 9,
+        "sigma_couleur": 120.0,
+        "sigma_espace": 120.0
+      }
+    },
+    {
+      "filtre": "posterisation",
+      "actif": true,
+      "parametres": {
+        "niveaux": 6
+      }
+    },
+    {
+      "filtre": "nettete_unsharp",
+      "actif": true,
+      "parametres": {
+        "taille_noyau": 5,
+        "sigma": 1.0,
+        "intensite": 0.4,
+        "seuil": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "nom": "Contours de Canny (TP7 ex.7)",
+  "etapes": [
+    {
+      "filtre": "niveaux_de_gris",
+      "actif": true,
+      "parametres": {}
+    },
+    {
+      "filtre": "filtre_gaussien",
+      "actif": true,
+      "parametres": {
+        "taille_noyau": 5,
+        "sigma_x": 0.0,
+        "sigma_y": 0.0,
+        "bord": "Miroir (défaut)"
+      }
+    },
+    {
+      "filtre": "canny",
+      "actif": true,
+      "parametres": {
+        "seuil_bas": 50,
+        "seuil_haut": 150,
+        "ouverture": 3,
+        "norme_l2": false,
+        "flou_prealable": 0
+      }
+    }
+  ]
+}

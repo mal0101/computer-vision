@@ -1,0 +1,15 @@
+# Dépendances de l'atelier de filtres.
+#
+# Les bornes basses correspondent aux premières versions où toutes les
+# fonctions utilisées existent avec la signature attendue ; aucune borne haute
+# n'est fixée, le code est vérifié avec OpenCV 4.x et 5.x.
+#
+#   python -m pip install -r requirements.txt
+
+numpy>=1.26
+opencv-python>=4.9          # cv2 : tout le traitement d'image et la webcam
+streamlit>=1.36             # interface web
+pillow>=10.0                # décodage d'images utilisé par Streamlit
+
+# Développement et vérification (facultatif pour un simple usage)
+pytest>=8.0

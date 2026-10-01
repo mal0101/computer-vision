@@ -1,0 +1,20 @@
+# Thème de l'atelier.
+#
+# Fond neutre sombre volontaire : c'est la convention des logiciels de
+# traitement d'image, car un entourage clair fausse la perception du contraste
+# et de la luminosité de l'image examinée.
+
+[theme]
+base = "dark"
+primaryColor = "#4cc2ff"
+backgroundColor = "#121418"
+secondaryBackgroundColor = "#1b1e24"
+textColor = "#e7e9ee"
+font = "sans serif"
+
+[server]
+# Les captures webcam et les images téléversées peuvent être volumineuses.
+maxUploadSize = 50
+
+[browser]
+gatherUsageStats = false

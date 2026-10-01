@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "nom": "Bruit sel-poivre puis filtre médian (TP7 ex.3)",
+  "etapes": [
+    {
+      "filtre": "bruit_sel_poivre",
+      "actif": true,
+      "parametres": {
+        "proportion": 0.08,
+        "ratio_sel": 0.5,
+        "graine": 42
+      }
+    },
+    {
+      "filtre": "filtre_median",
+      "actif": true,
+      "parametres": {
+        "taille_noyau": 5
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cvlab-atelier"
+version = "1.0.0"
+description = "Atelier interactif de filtres OpenCV (TP1 à TP7 de vision par ordinateur)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=1.26",
+    "opencv-python>=4.9",
+    "streamlit>=1.36",
+    "pillow>=10.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+cvlab = "cvlab.cli:main"
+
+[tool.setuptools]
+packages = ["cvlab", "cvlab.filters", "ui"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+# Les tests importent cvlab et ui depuis la racine du projet.
+pythonpath = ["."]
+filterwarnings = [
+    "error::DeprecationWarning:cvlab.*",
+    "error::DeprecationWarning:ui.*",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = [
+    "E501",    # la longueur de ligne est gérée par le formateur
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Les interfaces doivent configurer sys.path avant d'importer cvlab.
+"ui/*.py" = ["E402"]
+"tests/*.py" = ["E402"]

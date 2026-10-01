@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "nom": "Module du gradient de Sobel (TP7 ex.5)",
+  "etapes": [
+    {
+      "filtre": "filtre_gaussien",
+      "actif": true,
+      "parametres": {
+        "taille_noyau": 3,
+        "sigma_x": 0.0,
+        "sigma_y": 0.0,
+        "bord": "Miroir (défaut)"
+      }
+    },
+    {
+      "filtre": "sobel",
+      "actif": true,
+      "parametres": {
+        "direction": "Module du gradient",
+        "taille_noyau": 3,
+        "echelle": 1.0,
+        "decalage": 0,
+        "flou_prealable": 0
+      }
+    },
+    {
+      "filtre": "fausses_couleurs",
+      "actif": true,
+      "parametres": {
+        "palette": "Turbo"
+      }
+    }
+  ]
+}

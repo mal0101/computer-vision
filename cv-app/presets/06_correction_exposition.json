@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "nom": "Correction d'exposition : CLAHE + gamma + accentuation",
+  "etapes": [
+    {
+      "filtre": "clahe",
+      "actif": true,
+      "parametres": {
+        "limite": 2.5,
+        "tuiles": 8,
+        "espace": "Luminance L (Lab)"
+      }
+    },
+    {
+      "filtre": "correction_gamma",
+      "actif": true,
+      "parametres": {
+        "gamma": 1.2
+      }
+    },
+    {
+      "filtre": "nettete_unsharp",
+      "actif": true,
+      "parametres": {
+        "taille_noyau": 5,
+        "sigma": 1.0,
+        "intensite": 0.6,
+        "seuil": 4
+      }
+    }
+  ]
+}

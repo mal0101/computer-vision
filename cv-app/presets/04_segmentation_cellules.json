@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "nom": "Segmentation d'objets : Otsu puis morphologie",
+  "etapes": [
+    {
+      "filtre": "niveaux_de_gris",
+      "actif": true,
+      "parametres": {}
+    },
+    {
+      "filtre": "filtre_gaussien",
+      "actif": true,
+      "parametres": {
+        "taille_noyau": 5,
+        "sigma_x": 0.0,
+        "sigma_y": 0.0,
+        "bord": "Miroir (défaut)"
+      }
+    },
+    {
+      "filtre": "seuillage_automatique",
+      "actif": true,
+      "parametres": {
+        "methode": "Otsu",
+        "type_seuil": "Binaire inversé",
+        "flou_prealable": 0
+      }
+    },
+    {
+      "filtre": "morphologie",
+      "actif": true,
+      "parametres": {
+        "operation": "Ouverture",
+        "forme": "Ellipse",
+        "taille": 5,
+        "iterations": 1
+      }
+    },
+    {
+      "filtre": "squelette_contour_morpho",
+      "actif": true,
+      "parametres": {
+        "forme": "Rectangle",
+        "taille": 3
+      }
+    }
+  ]
+}
