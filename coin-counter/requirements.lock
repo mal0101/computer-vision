@@ -1,0 +1,8 @@
+# Versions figées — reproduisent l'environnement de vérification :
+#   cv-app/.venv (Python 3.13.5, vérifié le 2026-10-06).
+# Toute la chaîne de traitement (seuils, robustesse, performances) a été
+# calibrée et mesurée sur exactement ces versions.
+numpy==2.5.3
+opencv-python==5.0.0.93
+pytest==9.1.1
+ruff==0.16.9

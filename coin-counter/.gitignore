@@ -1,0 +1,14 @@
+# Sorties générées (images annotées, captures, sauvegardes)
+sorties/
+
+# Environnement local (repli si ../cv-app/.venv est absent)
+.venv/
+
+# Caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Fichiers macOS
+.DS_Store

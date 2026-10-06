@@ -1,0 +1,124 @@
+{
+  "source": "TP7/exercice 5/coins.jpg (identiques dans exercices 6, 7)",
+  "echelle_analyse": "native (800x800)",
+  "profil_encode": "sel_poivre",
+  "diametres_plage_px": [
+    124.97872924804688,
+    198.58851623535156
+  ],
+  "pieces": [
+    {
+      "centre": [
+        114.5,
+        504.6
+      ],
+      "rayon": 99.3
+    },
+    {
+      "centre": [
+        109.3,
+        126.4
+      ],
+      "rayon": 97.1
+    },
+    {
+      "centre": [
+        503.8,
+        121.7
+      ],
+      "rayon": 95.0
+    },
+    {
+      "centre": [
+        503.2,
+        507.2
+      ],
+      "rayon": 95.0
+    },
+    {
+      "centre": [
+        310.0,
+        507.3
+      ],
+      "rayon": 92.0
+    },
+    {
+      "centre": [
+        307.3,
+        123.3
+      ],
+      "rayon": 90.6
+    },
+    {
+      "centre": [
+        693.0,
+        121.1
+      ],
+      "rayon": 87.1
+    },
+    {
+      "centre": [
+        694.5,
+        506.0
+      ],
+      "rayon": 87.7
+    },
+    {
+      "centre": [
+        330.1,
+        697.9
+      ],
+      "rayon": 81.5
+    },
+    {
+      "centre": [
+        336.6,
+        311.8
+      ],
+      "rayon": 81.2
+    },
+    {
+      "centre": [
+        158.5,
+        697.5
+      ],
+      "rayon": 75.2
+    },
+    {
+      "centre": [
+        168.9,
+        315.7
+      ],
+      "rayon": 74.1
+    },
+    {
+      "centre": [
+        498.8,
+        308.5
+      ],
+      "rayon": 70.8
+    },
+    {
+      "centre": [
+        492.9,
+        704.5
+      ],
+      "rayon": 70.7
+    },
+    {
+      "centre": [
+        637.3,
+        702.6
+      ],
+      "rayon": 62.5
+    },
+    {
+      "centre": [
+        643.4,
+        311.9
+      ],
+      "rayon": 62.5
+    }
+  ],
+  "note": "Fixtures de DÉCOMPTE (détection) : pas de vérité de dénomination au-delà de la taille."
+}

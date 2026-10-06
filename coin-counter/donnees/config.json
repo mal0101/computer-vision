@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "largeur_analyse": 640,
+  "marge_classif": 0.2,
+  "portee_mm": [
+    18.5,
+    30.5
+  ],
+  "px_mm_min": 2.0,
+  "diametre_min_px": 40.0,
+  "centimes_par_defaut": false,
+  "seuils": {
+    "circularite_min": 0.85,
+    "solidite_min": 0.92,
+    "etendue_min": 0.62,
+    "aspect_max": 1.2,
+    "rayon_min_rel": 0.02,
+    "rayon_max_rel": 0.15,
+    "nms_diviseur": 0.5,
+    "occlusion_ecart_max": 0.15,
+    "eclat_frac_max": 0.15,
+    "inclinaison_min": 0.9,
+    "flou_aspect_max": 1.25,
+    "hough_dp": 1.2,
+    "hough_param1": 120.0,
+    "hough_param2": 30.0,
+    "hough_min_dist_div": 1.8,
+    "chevauchement_facteur": 1.5
+  },
+  "profils": {
+    "impulsion_frac_max": 0.02,
+    "uniformite_max": 1.5,
+    "laplacien_min": 30.0,
+    "contraste_rms_min": 0.05
+  },
+  "suivi": {
+    "hits_confirmer": 3,
+    "fenetre_confirmer": 5,
+    "stabilite_requise": 2,
+    "mediane_libelle": 7,
+    "fenetre_perdu": 10,
+    "max_manques": 6,
+    "ema_alpha": 0.7,
+    "facteur_association": 0.35,
+    "facteur_vitesse": 2.0,
+    "portee_rayon_rel": 0.15
+  },
+  "denominations": [
+    {
+      "valeur_centimes": 10,
+      "libelle": "10c",
+      "variantes_mm": [
+        20.0
+      ],
+      "famille": "or",
+      "polarite": null,
+      "annees": "2002-"
+    },
+    {
+      "valeur_centimes": 20,
+      "libelle": "20c",
+      "variantes_mm": [
+        23.0
+      ],
+      "famille": "or",
+      "polarite": null,
+      "annees": "2002-"
+    },
+    {
+      "valeur_centimes": 50,
+      "libelle": "1/2 DH",
+      "variantes_mm": [
+        21.0
+      ],
+      "famille": "argent",
+      "polarite": null,
+      "annees": "2002-"
+    },
+    {
+      "valeur_centimes": 100,
+      "libelle": "1 DH",
+      "variantes_mm": [
+        24.0
+      ],
+      "famille": "argent",
+      "polarite": null,
+      "annees": "1987-"
+    },
+    {
+      "valeur_centimes": 200,
+      "libelle": "2 DH",
+      "variantes_mm": [
+        26.0
+      ],
+      "famille": "argent",
+      "polarite": null,
+      "annees": "2002-"
+    },
+    {
+      "valeur_centimes": 500,
+      "libelle": "5 DH",
+      "variantes_mm": [
+        29.0,
+        26.2,
+        25.0
+      ],
+      "famille": "bimetallique",
+      "polarite": "centre_or",
+      "annees": "1980-"
+    },
+    {
+      "valeur_centimes": 1000,
+      "libelle": "10 DH",
+      "variantes_mm": [
+        28.0,
+        26.9,
+        27.0
+      ],
+      "famille": "bimetallique",
+      "polarite": "centre_argent",
+      "annees": "1995-"
+    }
+  ]
+}

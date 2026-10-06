@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coin-counter"
+version = "1.0.0"
+description = "Détection, identification et sommation de pièces marocaines à la webcam"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "numpy>=1.26",
+    "opencv-python>=4.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[tool.setuptools]
+packages = ["pieces", "pieces.ui"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+# La mesure de performance (-m perf) est exclue du tour par défaut ;
+# `make perf` la réactive avec « -m perf ».
+addopts = ["-q", "--strict-markers", "-m", "not perf"]
+# Les tests importent `pieces` depuis la racine du dossier coin-counter.
+pythonpath = ["."]
+markers = [
+    "perf: mesures de temps d'exécution (exclues du tour par défaut)",
+]
+filterwarnings = [
+    "error::DeprecationWarning:pieces.*",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = [
+    "E501",    # la longueur de ligne est gérée par le formateur
+]
+
+[tool.ruff.lint.per-file-ignores]
+# compat.py configure sys.path avant d'importer cvlab (cv-app/).
+"pieces/compat.py" = ["E402"]
+"tests/*.py" = ["E402"]

@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "commentaire": "Vérité terrain des captures réelles (make capture). Chaque scénario documente : image, étalonnage, pièces présentes (valeur en centimes + diamètre nominal en mm) et total attendu en centimes. Tant que la liste est vide, AUCUNE revendication de précision n'est autorisée (voir docs/01-portee.md).",
+  "scenarios": []
+}

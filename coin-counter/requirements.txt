@@ -1,0 +1,13 @@
+# Dépendances de coin-counter.
+#
+# L'environnement recommandé est le venv déjà présent du dépôt :
+# ../cv-app/.venv (OpenCV 5.0.0.93, NumPy 2.5.3, pytest, ruff).
+#
+# Fichier de versions figées : requirements.lock (reproduction exacte).
+
+numpy>=1.26
+opencv-python>=4.9          # cv2 : détection, webcam
+
+# Développement et vérification (facultatif pour un simple usage)
+pytest>=8.0
+ruff>=0.6
