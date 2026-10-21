@@ -8,10 +8,27 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 
-import pieces.compat as compat
-
+# ``cv-app`` est un dossier **frère** du dépôt, absent dès qu'on extrait
+# ``coin-counter`` seul — ce que son propre ``pyproject.toml`` présente
+# pourtant comme un projet autonome. ``pieces.compat`` lève alors une
+# ImportError *à l'import du module*, ce qui interrompait la COLLECTE de
+# pytest : plus un seul test ne s'exécutait, alors qu'aucun chemin de
+# production de coin-counter n'utilise ``compat``. On saute donc ce fichier
+# proprement au lieu de faire échouer toute la suite.
 RACINE = Path(__file__).resolve().parent.parent
+
+pytestmark = pytest.mark.skipif(
+    not (RACINE.parent / "cv-app").is_dir(),
+    reason="dossier frère cv-app absent de ce checkout (compat n'est utilisé "
+    "par aucun chemin de production de coin-counter)",
+)
+
+if (RACINE.parent / "cv-app").is_dir():
+    import pieces.compat as compat
+else:  # pragma: no cover - dépend du checkout
+    compat = None
 
 #: les 10 fonctions + 2 exceptions promis par le plan
 NOMS_ATTENDUS = {

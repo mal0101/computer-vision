@@ -15,13 +15,16 @@ visibles par une webcam, en direct. Le traitement est purement classique
 - Détection des pièces entièrement visibles sur un fond sombre mat,
   quel que soit le filtre éventuellement appliqué par l'environnement
   (le flux webcam **n'applique aucun filtre** — c'est le cœur de l'exigence).
-- Identification : {10c, 20c, ½, 1, 2, 5, 10} DH — les pièces de
-  **10c et 20c ne sont comptées qu'avec l'option `--centimes`** (défaut :
-  {½, 1, 2, 5, 10} DH).
+- Identification : {5c, 10c, 20c, ½, 1, 2, 5, 10} DH — les pièces de
+  **5c, 10c et 20c ne sont comptées qu'avec l'option `--centimes`** (défaut :
+  {½, 1, 2, 5, 10} DH). L'identification, elle, reste exhaustive.
 - Sommation exacte en **centimes entiers**, affichée au format
   marocain : `12,50 DH` (virgule française).
-- Étalonnage explicite (pièce de référence ou carte bancaire 85,6 mm),
-  obligatoire pour afficher un total confirmé.
+- Échelle (px/mm) par l'une de trois voies : `--echelle-px-mm` (mesurée),
+  étalonnage interactif sur une pièce de référence, ou **estimation au
+  catalogue** des diamètres. Une estimation est toujours annoncée comme
+  telle. Sans aucune des trois, aucun total n'est affiché — jamais un
+  chiffre inventé.
 - Suivi de pistes : anti-scintillement (médiane sur 7 décisions, seuil de
   confirmation 3/5 frames), total recalculé par frame uniquement sur les
   pièces confirmées.
@@ -59,13 +62,41 @@ visibles par une webcam, en direct. Le traitement est purement classique
 
 | Dénomination | Ø mm | Famille | Bimétallique |
 |---|---|---|---|
-| 10c | 20 | or | non |
-| 20c | 23 | or | non |
-| ½ DH | 21 | argent | non |
-| 1 DH | 24 | argent | non |
-| 2 DH | 26 | argent | non |
-| 5 DH | 25 (variantes 26,2 / 29) | bimétallique | centre or |
-| 10 DH | 27 (variantes 26,9 / 28) | bimétallique | centre argent |
+| 5c | 17,5 | or (bronze d'aluminium) | non |
+| 10c | 20,0 | or | non |
+| 20c | 23,0 | or | non |
+| ½ DH | 21,0 | argent | non |
+| 1 DH | 24,0 | argent | non |
+| 2 DH | 26,0 | argent (cupronickel) | non |
+| 5 DH | 25,0 (variante 1987 : 26,2) | bimétallique | noyau or |
+| 10 DH | 26,9 (variante 1995 : 28,0) | bimétallique | noyau argent |
+
+Table recoupée Bank Al-Maghrib / Numista **et vérifiée par mesure** sur
+`TP7/exercice 5/coins.jpg` : ajustement aux moindres carrés sur les sept
+dénominations de diamètre connu, RMS 0,27 mm, écart maximal 0,39 mm. Le 5c,
+exclu de l'ajustement, y retombe à 17,4 mm pour 17,5 mm au catalogue.
+
+Trois corrections par rapport à la table d'origine :
+
+* **5c ajouté.** La pièce circule et figure dans la fixture ; son absence la
+  rendait définitivement « inconnue ». `portee_mm` descend à 16,5 mm.
+* **5 DH : variante 29,0 mm retirée.** Le 5 DH « type 1980 » est
+  *monométallique* cupronickel : inscrit sous une entrée bimétallique, il
+  était inidentifiable, le veto de couleur le classant « argent », famille
+  qui ne possède aucune variante à 29 mm.
+* **10 DH : variante 27,0 mm retirée** — sans source, et à 0,1 mm de
+  26,9 mm elle ne faisait qu'élargir la fenêtre d'acceptation.
+
+Le **2 DH reste « argent »**. La fiche web de Bank Al-Maghrib annonce
+simultanément « Noyau Or / Bague Argent » et « Cuivre 75 % – Nickel 25 % » :
+ces deux mentions sont contradictoires, le cupronickel étant un alliage
+unique de teinte argentée. Numista, uCoin et la mesure directe (saturation
+7–12 au centre *comme* sur la couronne) concordent : la pièce est
+monométallique.
+
+Écart minimal **à l'intérieur** d'une même famille : 2,00 mm (1 DH / 2 DH),
+soit dix fois la marge de décision. Les collisions entre familles — 2 DH
+(26,0) contre 10 DH (26,9), par exemple — sont tranchées par la couleur.
 
 Les diamètres ne sont **pas monotones** avec la valeur et l'écart entre
 classes voisines n'est que de 1 mm : la classification repose sur

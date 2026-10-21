@@ -1,124 +1,158 @@
 {
-  "source": "TP7/exercice 5/coins.jpg (identiques dans exercices 6, 7)",
-  "echelle_analyse": "native (800x800)",
-  "profil_encode": "sel_poivre",
-  "diametres_plage_px": [
-    124.97872924804688,
-    198.58851623535156
+  "version": 2,
+  "source": "TP7/exercice 5/coins.jpg (identique dans les exercices 5, 6, 7)",
+  "resolution": [
+    800,
+    800
   ],
+  "methode": "Annotation INDÉPENDANTE du détecteur du projet : seuil fixe à 60 (et non Otsu), composantes connexes (et non findContours + portes géométriques), centroïde et rayon équivalent-aire r=sqrt(A/pi) (et non minEnclosingCircle). Aucune ligne de pieces/detection.py n'intervient, de sorte qu'un accord entre les deux constitue une preuve et non une tautologie.",
+  "echelle_px_mm": 7.1792,
+  "echelle_methode": "Ajustement aux moindres carrés des 7 dénominations de diamètre connu (le 5c est exclu de l'ajustement puis vérifié a posteriori : 17,4 mm mesurés contre 17,5 mm au catalogue). RMS 0,27 mm, écart maximal 0,39 mm. Les deux rangées présentent un biais systématique d'environ 2 % l'une par rapport à l'autre : la planche est un assemblage, elle ne peut donc PAS servir de référence métrologique au-delà de ~0,4 mm. Pour une porte de comptage exacte, utiliser pieces.scenes.",
+  "note": "La planche montre les 8 dénominations en cours, chacune deux fois (avers puis revers) : 8 pièces physiques, 16 disques.",
   "pieces": [
     {
       "centre": [
-        114.5,
-        504.6
+        109.5,
+        126.2
       ],
-      "rayon": 99.3
+      "rayon": 96.6,
+      "aire": 29316,
+      "denomination": "10 DH"
     },
     {
       "centre": [
-        109.3,
-        126.4
+        307.1,
+        123.0
       ],
-      "rayon": 97.1
-    },
-    {
-      "centre": [
-        503.8,
-        121.7
-      ],
-      "rayon": 95.0
+      "rayon": 90.1,
+      "aire": 25498,
+      "denomination": "5 DH"
     },
     {
       "centre": [
         503.2,
-        507.2
+        121.4
       ],
-      "rayon": 95.0
+      "rayon": 94.3,
+      "aire": 27922,
+      "denomination": "2 DH"
     },
     {
       "centre": [
-        310.0,
-        507.3
-      ],
-      "rayon": 92.0
-    },
-    {
-      "centre": [
-        307.3,
-        123.3
-      ],
-      "rayon": 90.6
-    },
-    {
-      "centre": [
-        693.0,
+        692.8,
         121.1
       ],
-      "rayon": 87.1
+      "rayon": 86.5,
+      "aire": 23520,
+      "denomination": "1 DH"
     },
     {
       "centre": [
-        694.5,
-        506.0
+        168.2,
+        316.0
       ],
-      "rayon": 87.7
+      "rayon": 74.1,
+      "aire": 17269,
+      "denomination": "1/2 DH"
     },
     {
       "centre": [
-        330.1,
-        697.9
+        336.5,
+        311.6
       ],
-      "rayon": 81.5
+      "rayon": 81.1,
+      "aire": 20681,
+      "denomination": "20c"
     },
     {
       "centre": [
-        336.6,
-        311.8
-      ],
-      "rayon": 81.2
-    },
-    {
-      "centre": [
-        158.5,
-        697.5
-      ],
-      "rayon": 75.2
-    },
-    {
-      "centre": [
-        168.9,
-        315.7
-      ],
-      "rayon": 74.1
-    },
-    {
-      "centre": [
-        498.8,
+        498.7,
         308.5
       ],
-      "rayon": 70.8
+      "rayon": 70.8,
+      "aire": 15757,
+      "denomination": "10c"
     },
     {
       "centre": [
-        492.9,
-        704.5
+        643.5,
+        311.8
       ],
-      "rayon": 70.7
+      "rayon": 62.4,
+      "aire": 12229,
+      "denomination": "5c"
     },
     {
       "centre": [
-        637.3,
-        702.6
+        114.0,
+        504.5
       ],
-      "rayon": 62.5
+      "rayon": 98.4,
+      "aire": 30422,
+      "denomination": "10 DH"
     },
     {
       "centre": [
-        643.4,
-        311.9
+        310.9,
+        506.7
       ],
-      "rayon": 62.5
+      "rayon": 90.9,
+      "aire": 25977,
+      "denomination": "5 DH"
+    },
+    {
+      "centre": [
+        503.2,
+        506.7
+      ],
+      "rayon": 94.2,
+      "aire": 27851,
+      "denomination": "2 DH"
+    },
+    {
+      "centre": [
+        693.4,
+        505.4
+      ],
+      "rayon": 86.5,
+      "aire": 23503,
+      "denomination": "1 DH"
+    },
+    {
+      "centre": [
+        158.7,
+        697.1
+      ],
+      "rayon": 74.6,
+      "aire": 17473,
+      "denomination": "1/2 DH"
+    },
+    {
+      "centre": [
+        329.1,
+        698.2
+      ],
+      "rayon": 81.2,
+      "aire": 20718,
+      "denomination": "20c"
+    },
+    {
+      "centre": [
+        492.7,
+        704.6
+      ],
+      "rayon": 70.5,
+      "aire": 15604,
+      "denomination": "10c"
+    },
+    {
+      "centre": [
+        638.0,
+        702.7
+      ],
+      "rayon": 62.4,
+      "aire": 12230,
+      "denomination": "5c"
     }
-  ],
-  "note": "Fixtures de DÉCOMPTE (détection) : pas de vérité de dénomination au-delà de la taille."
+  ]
 }

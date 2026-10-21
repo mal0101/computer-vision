@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "commentaire": "Banc de DÉTECTION sur photographies réelles : on y compte des disques, pas des dirhams. Aucune de ces pièces n'est marocaine, donc aucune dénomination n'est attendue — seul le décompte fait foi. Décomptes établis visuellement pièce par pièce, recoupés par une segmentation indépendante du détecteur du projet. Provenance et détails : donnees/photos/README.md.",
+  "total_pieces": 46,
+  "scenes": [
+    {
+      "fichier": "photos/us_vrac_8.jpg",
+      "pieces": 8,
+      "fond": "clair",
+      "note": "huit pièces US bien séparées sur fond blanc uniforme"
+    },
+    {
+      "fichier": "photos/us_grille_12.png",
+      "pieces": 12,
+      "fond": "clair",
+      "note": "grille 4x3, rapport de tailles important (1 cent -> 1 dollar)"
+    },
+    {
+      "fichier": "photos/jouet_6.jpg",
+      "pieces": 6,
+      "fond": "clair",
+      "note": "pièces-jouets, reliefs émoussés, faible contraste"
+    },
+    {
+      "fichier": "photos/or_fond_blanc_5.jpg",
+      "pieces": 5,
+      "fond": "blanc",
+      "note": "pièces dorées sur blanc pur : contraste minimal, ombres portées"
+    },
+    {
+      "fichier": "photos/uae_grille_12.png",
+      "pieces": 12,
+      "fond": "clair",
+      "note": "12 dirhams des EAU, diamètres quasi identiques"
+    },
+    {
+      "fichier": "photos/table_reelle_3.png",
+      "pieces": 3,
+      "fond": "gris clair",
+      "note": "photographie réelle de table, léger flou — le cas le plus proche d'une scène webcam"
+    }
+  ]
+}

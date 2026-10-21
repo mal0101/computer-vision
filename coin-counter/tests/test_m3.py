@@ -249,7 +249,11 @@ def test_cli_arguments_defauts():
 
     args = parcourir_arguments([])
     assert args.centimes is False
-    assert args.camera == 0
+    # plus de caméra par défaut : lancer la commande nue ouvrait autrefois la
+    # webcam 0 et bouclait sans fin, sans la moindre sortie
+    assert args.camera is None
+    assert args.image is None
+    assert args.echelle_px_mm is None
     assert args.etalon_mm == 24.0
     assert args.limite is None
     assert args.sans_fenetre is False
@@ -276,11 +280,37 @@ def test_cli_version_exit_zero(capsys):
     assert "coin-counter" in capsys.readouterr().out
 
 
-def test_cli_sans_fenetre_code_zero(capsys):
+def test_cli_sans_fenetre_execute_vraiment_le_pipeline(capsys):
+    """L'autotest doit exercer la chaîne, pas imprimer une phrase.
+
+    L'ancienne version renvoyait 0 sans rien exécuter : elle ne pouvait
+    signaler aucune régression.
+    """
     from pieces.cli import principal
 
     assert principal(["--sans-fenetre"]) == 0
-    assert "sans fenêtre" in capsys.readouterr().out
+    sortie = capsys.readouterr().out
+    assert "autotest : RÉUSSI" in sortie
+    assert "pièces détectées   : 8/8" in sortie
+    assert "18,50 DH" in sortie
+
+
+def test_cli_sans_argument_refuse(capsys):
+    from pieces.cli import principal
+
+    assert principal([]) == 2
+    assert "rien à faire" in capsys.readouterr().err
+
+
+def test_cli_etalon_mm_aberrant_refuse():
+    """--etalon-mm est validé à l'analyse des arguments, pas en pleine session."""
+    import pytest as _pytest
+
+    from pieces.cli import parcourir_arguments
+
+    for mauvais in ("0", "-5", "1e9"):
+        with _pytest.raises(SystemExit):
+            parcourir_arguments(["--etalon-mm", mauvais])
 
 
 def test_cli_config_invalide_code_deux(capsys):
@@ -304,14 +334,27 @@ def test_cli_config_fichier_valide(tmp_path: Path):
 def test_cli_image_statique(tmp_path: Path):
 
     from pieces.cli import principal
+    from pieces.scenes import scene_etalon
 
+    scene = scene_etalon(5.0)
     source = tmp_path / "scene.png"
-    cv2.imwrite(str(source), _coin_scene())
+    cv2.imwrite(str(source), scene.image)
     sortie = tmp_path / "hud.png"
-    assert principal(["--image", str(source), "--sortie", str(sortie)]) == 0
+    rapport = tmp_path / "rapport.json"
+    code = principal(
+        ["--image", str(source), "--sortie", str(sortie), "--json", str(rapport)]
+    )
+    assert code == 0
     assert sortie.is_file()
     image = cv2.imread(str(sortie))
-    assert image is not None and image.shape == (480, 640, 3)
+    assert image is not None and image.shape == scene.image.shape
+
+    # le total doit être JUSTE, pas seulement non nul : c'est précisément ce
+    # que l'ancienne version de ce test ne vérifiait pas, d'où un « 0,00 DH »
+    # resté vert pendant toute la vie du projet
+    donnees = json.loads(rapport.read_text(encoding="utf-8"))
+    assert donnees["total_centimes"] == scene.total_sans_centimes
+    assert donnees["echelle_estimee"] is True
 
 
 def test_cli_image_illisible(capsys):

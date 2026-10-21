@@ -36,11 +36,16 @@ _RACINE = Path(__file__).resolve().parents[2]
 #: dossier cv-app à injecter dans sys.path
 _CV_APP = _RACINE / "cv-app"
 
-if not _CV_APP.is_dir():
+#: vrai si le dossier frère cv-app est présent et importable
+CV_APP_DISPONIBLE = _CV_APP.is_dir()
+
+if not CV_APP_DISPONIBLE:
     raise ImportError(
         "dossier cv-app introuvable à côté de coin-counter "
-        f"(attendu : {_CV_APP}). Ce projet réutilise sa webcam et ses "
-        "outils d'entrée/sortie : cloner le dépôt complet."
+        f"(attendu : {_CV_APP}). Ce module n'est utilisé par AUCUN chemin de "
+        "production de coin-counter : son absence n'empêche ni la détection, "
+        "ni le comptage, ni la ligne de commande. Les tests qui en dépendent "
+        "doivent le sauter (pytest.importorskip), pas échouer à la collecte."
     )
 if str(_CV_APP) not in sys.path:
     sys.path.insert(0, str(_CV_APP))

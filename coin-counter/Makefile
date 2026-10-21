@@ -6,6 +6,7 @@
 #   make lint      vérifie le style avec ruff
 #   make perf      exécute les tests de performance (-m perf)
 #   make bench     produit le tableau des temps d'exécution
+#   make autotest  autotest du pipeline (aucune caméra, vérité connue)
 #   make webcam    lance le comptage en direct sur la webcam
 #   make image     analyse une image statique (argument IMAGE=...)
 #   make capture   capture une image d'étalonnage (sorties/capture.png)
@@ -13,17 +14,18 @@
 
 PYTHON ?= python3
 
-# Environnement principal : le venv déjà présent du dépôt (cv-app).
-# Repli : un venv local .venv créé depuis requirements.lock.
-ifneq ($(wildcard ../cv-app/.venv/bin/python),)
-VENV := ../cv-app/.venv
-else
+# Environnement : un venv LOCAL au projet, créé depuis requirements.lock.
+#
+# Le Makefile visait auparavant ../cv-app/.venv en priorité — un dossier
+# frère absent de tout extrait autonome de coin-counter, et absent du dépôt
+# lui-même. Toutes les cibles échouaient alors sur un interpréteur
+# introuvable. Le projet se suffit désormais à lui-même ; `make venv` crée
+# .venv si besoin.
 VENV := .venv
-endif
 BIN := $(VENV)/bin
 PY  := $(BIN)/python
 
-.PHONY: venv check test lint perf bench webcam image capture propre
+.PHONY: venv check test lint perf bench autotest webcam image capture propre
 
 venv:
 	@if [ -x "$(PY)" ]; then \
@@ -55,6 +57,9 @@ bench: venv
 webcam: venv
 	$(PY) -m pieces.cli --camera 0
 
+autotest: venv
+	$(PY) -m pieces.cli --sans-fenetre
+
 image: venv
 	@test -n "$(IMAGE)" || (echo "usage : make image IMAGE=chemin/vers/image.jpg" && exit 1)
 	$(PY) -m pieces.cli --image $(IMAGE)
@@ -64,4 +69,4 @@ capture: venv
 
 propre:
 	rm -rf .pytest_cache .ruff_cache sorties
-	find . -path "$(VENV)" -prune -o -name __pycache__ -type d -exec rm -rf {} +
+	find . -name __pycache__ -type d -prune -exec rm -rf {} +

@@ -8,8 +8,25 @@ le pipeline complet).
 ## 1. Objectif
 
 En direct, une pièce passe par phases `tentative → confirmee → comptee →
-perdue`. La règle d'or : **le total ne peut jamais baisser** — on ne
-décompte jamais, on gèle. Une pièce incertaine n'est jamais comptée.
+perdue`. Deux règles, à ne pas confondre :
+
+1. **le total ne baisse jamais** — on ne décompte pas, on gèle ;
+2. **une même pièce physique n'est comptée qu'une fois**.
+
+La seconde ne découlait pas de la première. Le total était bien monotone,
+mais une pièce qui sortait du champ puis revenait, ou dont le rayon mesuré
+dérivait de plus de `portee_rayon_rel`, ouvrait une piste neuve et était
+recomptée. Une empreinte (centre, rayon, valeur) des pistes déjà comptées
+est donc conservée `memoire_comptees` frames ; au-delà, une pièce
+réellement reposée sur la table redevient comptable — limite assumée et
+bornée, pas une garantie absolue.
+
+**Deux axes portent des noms voisins et n'ont aucun rapport** : la *phase*
+d'une piste (`tentative`, `confirmee`…) décrit sa présence temporelle, la
+*certitude* d'une classification (`tentative`, `confirme`…) décrit la
+confiance d'identification. Le comptage exige désormais les deux ; il
+n'exigeait que la première, et additionnait donc des identifications
+simplement « tentatives ».
 
 ## 2. Machine d'états et seuils (`Config.suivi`)
 
@@ -18,7 +35,7 @@ décompte jamais, on gèle. Une pièce incertaine n'est jamais comptée.
 | `hits_confirmer` | 3 | présences requises dans la fenêtre |
 | `fenetre_confirmer` | 5 | fenêtre glissante de confirmation |
 | `stabilite_requise` | 2 | frames de libellé identique avant gel |
-| `mediane_libelle` | 7 | médiane des dernières valeurs pour le libellé |
+| `mediane_libelle` | 7 | fenêtre du **vote majoritaire** du libellé |
 | `max_manques` | 6 | absences avant déclaration « perdue » |
 | `fenetre_perdu` | 10 | frames (délai) avant déclaration « perdue » |
 | `ema_alpha` | 0,7 | lissage de la vitesse de chaque piste |
@@ -28,10 +45,14 @@ décompte jamais, on gèle. Une pièce incertaine n'est jamais comptée.
 
 ### Phases
 
-1. **tentative** — piste créée à la première apparition. Une valeur
-   (`10, 20, 50, 100, 200, 500, 1000`) est *candidate* dès que la
-   classification produit une valeur ; elle ne devient officielle qu'après
-   `stabilite_requise` frames identiques (médiane sur `mediane_libelle`).
+1. **tentative** — piste créée à la première apparition. Une valeur est
+   *candidate* dès que la classification en produit une **confirmée** ; elle
+   ne devient officielle qu'après `stabilite_requise` frames identiques.
+   Le départage se fait par **vote majoritaire** sur `mediane_libelle`, et
+   non par médiane : une dénomination est une étiquette catégorielle, où la
+   médiane n'a pas de sens — `median([100, 1000])` vaut 550, qui n'est
+   aucune pièce et bloquait la piste sans valeur pour toujours. Une égalité
+   de voix ne tranche pas : on attend.
 2. **confirmee** — `hits_confirmer` présences dans `fenetre_confirmer` :
    le libellé et la valeur sont gelés ; **ajoutée une seule fois** au
    total (comptée), jamais retirée.
@@ -59,7 +80,7 @@ quand une pièce en cache une autre : un écart de rayon de 87 % crée une
   mais n'entre pas dans le total sans `--centimes`.
 - Motifs d'incertitude — *jamais comptés* : `occlusion`, `eclat`,
   `inclinaison`, `trop_petit`, `chevauchement` non résolu, `hors_portee`
-  (18,5–30,5 mm), `inconnue` (famille ou taille ambiguë).
+  (16,5–30,5 mm), `inconnue` (famille ou taille ambiguë).
 - `Suiveur.reinitialiser()` remet pistes, total et compteur à zéro.
   `par_valeur_total` expose le décompte consolidé au HUD.
 

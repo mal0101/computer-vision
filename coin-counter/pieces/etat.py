@@ -27,6 +27,12 @@ class EtatApplication:
     px_par_mm: float | None = None
     #: mode « tenir une pièce connue » : collecte de l'échelle
     mode_etalonnage: bool = False
+    #: autoriser l'estimation de l'échelle depuis le catalogue des diamètres
+    #: quand aucun étalonnage n'a été fait (voir traitement.inventorier_image)
+    auto_echelle: bool = True
+    #: vrai si ``px_par_mm`` provient d'une estimation et non d'une mesure —
+    #: l'interface doit pouvoir distinguer les deux
+    echelle_estimee: bool = False
     #: affichage du masque de profilage (touche D)
     afficher_masque: bool = False
     observateur: ObservateurEtalonnage | None = None

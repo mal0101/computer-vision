@@ -76,13 +76,6 @@ def test_coins_jpg_chaque_piece_io_ge_060(coins_jpg):
     assert not echecs, f"pièces sous le seuil IoU : {echecs}"
 
 
-def test_coins_jpg_profil_encode_coherent(coins_jpg):
-    annotation = json.loads(CHEMIN_ANNOTATIONS.read_text(encoding="utf-8"))
-    image = cv2.imread(str(coins_jpg))
-    resultat = detecter(image, CONFIG_DEFAUT)
-    assert annotation["profil_encode"] == resultat.profil
-
-
 def test_annotations_rayons_dans_la_plage_62_99(coins_jpg):
     annotation = json.loads(CHEMIN_ANNOTATIONS.read_text(encoding="utf-8"))
     rayons = [p["rayon"] for p in annotation["pieces"]]

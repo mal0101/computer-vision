@@ -136,8 +136,12 @@ def test_denomination_famille_inconnue_leve() -> None:
 
 def test_bimetallique_sans_polarite_leve() -> None:
     brut = config_vers_dict(CONFIG_DEFAUT)
-    # la dénomination 5 DH (index 5) perd sa polarité
-    brut["denominations"][5]["polarite"] = None  # type: ignore[index]
+    # la dénomination 5 DH perd sa polarité (repérée par libellé : un index
+    # fixe se décale silencieusement dès qu'on ajoute une dénomination)
+    cinq_dh = next(
+        d for d in brut["denominations"] if d["libelle"] == "5 DH"  # type: ignore[index,union-attr]
+    )
+    cinq_dh["polarite"] = None
     with pytest.raises(ErreurConfiguration, match="polarité obligatoire"):
         dict_vers_config(brut)
 
@@ -189,7 +193,7 @@ def test_defaut_sans_centimes() -> None:
 
 def test_avec_centimes_explicite() -> None:
     actives = denominations_actives(CONFIG_DEFAUT, centimes=True)
-    assert [d.valeur_centimes for d in actives] == [10, 20, 50, 100, 200, 500, 1000]
+    assert [d.valeur_centimes for d in actives] == [5, 10, 20, 50, 100, 200, 500, 1000]
 
 
 def test_option_defaut_sur_configuration_centimes() -> None:
@@ -198,11 +202,30 @@ def test_option_defaut_sur_configuration_centimes() -> None:
     assert 10 in [d.valeur_centimes for d in actives]
 
 
-def test_toutes_variantes_renseignees() -> None:
-    par_valeur = {d.valeur_centimes: d.variantes_mm for d in DENOMINATIONS_DEFAUT}
-    assert par_valeur[500] == (29.0, 26.2, 25.0)
-    assert par_valeur[1000] == (28.0, 26.9, 27.0)
-    assert par_valeur[200] == (26.0,)
+def test_catalogue_separable_dans_chaque_famille() -> None:
+    """Deux dénominations de même famille+polarité doivent être séparables.
+
+    Remplace l'ancien test qui recopiait les diamètres littéraux (il changeait
+    de valeur à chaque correction du catalogue sans jamais rien vérifier).
+    Ici on teste la propriété qui compte réellement : à l'intérieur d'une
+    famille, le veto de couleur n'aide plus, donc seul l'écart de diamètre
+    sépare — il doit dépasser la marge de décision des deux côtés.
+    """
+    familles: dict[tuple[str, str | None], list[tuple[float, int]]] = {}
+    for d in DENOMINATIONS_DEFAUT:
+        for mm in d.variantes_mm:
+            familles.setdefault((d.famille, d.polarite), []).append(
+                (mm, d.valeur_centimes)
+            )
+    for cle, variantes in familles.items():
+        variantes.sort()
+        for (mm_a, val_a), (mm_b, val_b) in zip(variantes, variantes[1:], strict=False):
+            if val_a == val_b:
+                continue  # deux millésimes d'une même pièce : pas d'ambiguïté
+            assert mm_b - mm_a > 2 * CONFIG_DEFAUT.marge_classif, (
+                f"{cle} : {val_a} et {val_b} centimes ne sont séparés que de "
+                f"{mm_b - mm_a:.2f} mm, en deçà de la marge de décision"
+            )
 
 
 # ---------------------------------------------------------------------------

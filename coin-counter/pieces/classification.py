@@ -2,24 +2,38 @@
 
 Ordre de décision, identifié dans ``docs/02-classification.md`` :
 
-1. **Famille par la couleur** — la teinte « or » OU l'absence de saturation
-   (« argent ») d'un disque est un veto absolu : une pièce or ne peut pas
-   être argentée et inversement. Le bimétallique se reconnaît par l'écart de
-   teinte entre le centre et la couronne (> ``SEUIL_DIFF_BIMETAL``), tant que
-   chaque zone est *couverte* à plus de ``SEUIL_COUVERTURE`` par sa couleur
-   (sinon la zone est gravée/marquée et le motif devient illisible).
-2. **Polarité** — le bimétallique est désambiguïsé par la couleur du centre
-   (5 DH = centre or / couronne argent, 10 DH = le contraire), une décision
-   *pure couleur* utilisable même sans échelle.
-3. **Taille** — avec ``px_par_mm`` (étalonnage), le diamètre mesuré est
-   comparé aux variantes de chaque dénomination ; il faut ``marge ≥
-   config.marge_classif`` contre la deuxième meilleure, sinon UNKNOWN.
-   Hors ``config.portee_mm`` → ``motif_incertitude = "hors_portee"``
+1. **Famille par la couleur** — décidée par la **saturation**, confirmée (et
+   jamais décidée) par la teinte. Métal coloré (laiton, bronze
+   d'aluminium) au-dessus de ``SEUIL_SAT_COLORE``, métal clair
+   (cupronickel, acier nickelé) en dessous. Le bimétallique se reconnaît au
+   **contraste de saturation** entre noyau et couronne
+   (``SEUIL_CONTRASTE_BIMETAL``).
+
+   Pourquoi pas la teinte : mesurée sur les pièces réelles, elle est
+   dégénérée — or comme argent tombent entre 4 et 28 — parce que la teinte
+   d'une surface peu chromatique est numériquement instable. La saturation,
+   elle, sépare franchement (or 78–95, argent 3–15). L'ancienne règle, qui
+   interrogeait la teinte en premier, obtenait 11/14 ; celle-ci 16/16.
+
+2. **Polarité** — le bimétallique est désambiguïsé par celle des deux zones
+   qui est le laiton (5 DH = noyau or / couronne argent, 10 DH = le
+   contraire), une décision *pure couleur* utilisable même sans échelle.
+
+3. **Taille** — avec ``px_par_mm``, le diamètre mesuré (``diametre_mesure``,
+   équivalent en aire) est comparé aux variantes de chaque dénomination ; il
+   faut ``marge ≥ config.marge_classif`` contre la deuxième meilleure, sinon
+   UNKNOWN. Hors ``config.portee_mm`` → ``motif_incertitude = "hors_portee"``
    (jamais comptée).
+
+Une famille **illisible** ne confirme jamais : le veto de couleur est
+précisément ce qui sépare les diamètres voisins, et sans lui la seule taille
+confirme une dénomination *fausse* 40 % du temps (balayage mesuré au pas de
+0,1 mm). Une valeur fausse est pire qu'une absence de valeur.
 
 Sans échelle (``px_par_mm is None``), aucune combinaison famille+polarité ne
 peut trancher sauf le bimétallique qui n'a qu'un candidat ; le résultat reste
-au plus **tentative** (jamais ``confirme``).
+au plus **tentative** (jamais ``confirme``) — et le suivi refuse de compter
+une ``tentative``.
 
 Les pièces déjà marquées d'un ``motif_incertitude`` ne sont pas classifiées :
 elles passent telles quelles (elles ne sont comptées nulle part).
@@ -56,18 +70,27 @@ RAPPORT_CENTRE = 0.45
 #: anneau « couronne » échantillonné (fractions interne / externe)
 COURONNE_INT = 0.5
 COURONNE_EXT = 0.9
-#: écart de teinte minimal (hue OpenCV 0..180) entre centre et couronne
-#: pour conclure « bimétallique » (or vs argent : ≈ 25-35° en hue)
-SEUIL_DIFF_BIMETAL = 14.0
+#: contraste de SATURATION minimal entre noyau et couronne pour conclure
+#: « bimétallique ». Mesuré sur les quatre pièces bimétalliques réelles de
+#: coins.jpg : 31, 33, 56 et 58 — le plancher à 20 laisse une marge nette,
+#: alors que les pièces monométalliques plafonnent à 4 (noyau contre
+#: couronne du même métal). Remplace un écart de TEINTE de 14, qui ratait
+#: un 10 DH sur deux (écart mesuré 9,6, la teinte d'une zone argentée étant
+#: du bruit).
+SEUIL_CONTRASTE_BIMETAL = 20.0
 #: fraction minimale de pixels « de la couleur de la zone » ; en-dessous,
 #: la zone est trop gravée / éclatée pour conclure
 SEUIL_COUVERTURE = 0.30
 #: largeur de fenêtre de couleur autour de la teinte médiane d'une zone
 #: (extensibilité de la « couverture »)
 ECART_HUE_PEUPLER = 20.0
-#: saturation ≥ ce seuil : pièce colorée (donc candidate « or » ou
-#: « bimétallique ») ; en-dessous : métal clair « argent »
-SEUIL_SAT_METAL = 60.0
+#: saturation ≥ ce seuil : zone de métal coloré (laiton, bronze
+#: d'aluminium) ; en dessous : métal clair (cupronickel, acier nickelé).
+#: Mesuré sur coins.jpg : laiton 39 à 95, cupronickel 3 à 15. Le plancher
+#: se pose à 30, au milieu d'un intervalle vide de 24 points. L'ancienne
+#: valeur de 60 coupait l'intervalle du laiton en deux et faisait passer les
+#: noyaux de 5 DH (39 et 47) pour de l'argent.
+SEUIL_SAT_COLORE = 30.0
 #: valeur V < ce seuil : pièce trop sombre pour une lecture de couleur
 SEUIL_VALEUR_SOMBRE = 45.0
 #: bande de teinte « or » (hue OpenCV : jaune-orangé des dinars marocains)
@@ -102,27 +125,54 @@ def _couleur_region(
 
     La couverture est la fraction des pixels de la zone à moins de
     ``ECART_HUE_PEUPLER`` de la teinte moyenne : elle mesure l'homogénéité
-    de la couleur (une couronne gravée retombe sur une faible couverture).
+    de la couleur. Elle n'a de sens que sur une zone réellement colorée :
+    la teinte d'une surface peu saturée est un bruit numérique (cf.
+    ``_famille_piece``).
+
+    Le masque est construit sur la **boîte englobante** de la zone, pas sur
+    l'image entière. Deux ``np.ogrid`` pleine image par pièce coûtaient
+    22,3 ms pour 14 pièces en 640×640 — soit 95 % du coût de la
+    classification et quatre fois celui de la détection ; la version locale
+    rend exactement les mêmes valeurs en 5,9 ms.
     """
-    yy, xx = np.ogrid[: hsv.shape[0], : hsv.shape[1]]
+    hauteur, largeur = hsv.shape[:2]
+    portee = rayon_ext * rayon
+    x0 = max(0, int(np.floor(centre[0] - portee)))
+    x1 = min(largeur, int(np.ceil(centre[0] + portee)) + 1)
+    y0 = max(0, int(np.floor(centre[1] - portee)))
+    y1 = min(hauteur, int(np.ceil(centre[1] + portee)) + 1)
+    if x0 >= x1 or y0 >= y1:
+        return 0.0, 0.0, 0.0, 0.0
+    vignette = hsv[y0:y1, x0:x1]
+    yy, xx = np.ogrid[y0:y1, x0:x1]
     d2 = (yy - centre[1]) ** 2 + (xx - centre[0]) ** 2
-    zone = d2 <= (rayon_ext * rayon) ** 2
+    zone = d2 <= portee**2
     if rayon_int > 0.0:
         zone &= d2 >= (rayon_int * rayon) ** 2
-    teintes = hsv[:, :, 0][zone].astype(np.float64)
+    teintes = vignette[:, :, 0][zone].astype(np.float64)
     if teintes.size < 32:
         return 0.0, 0.0, 0.0, 0.0
     hue = _moyenne_circulaire_teinte(teintes)
     couv = float(
         np.mean(_distance_teinte(hue, np.asarray(teintes)) <= ECART_HUE_PEUPLER)
     )
-    sat = float(np.median(hsv[:, :, 1][zone]))
-    val = float(np.median(hsv[:, :, 2][zone]))
+    sat = float(np.median(vignette[:, :, 1][zone]))
+    val = float(np.median(vignette[:, :, 2][zone]))
     return hue, sat, val, couv
 
 
 def _dans_bande_or(teinte: float) -> bool:
     return BANDE_OR_MIN <= teinte <= BANDE_OR_MAX
+
+
+def _est_laiton(hue: float, sat: float) -> bool:
+    """Zone métallique colorée *et* dans la bande chaude du laiton.
+
+    La teinte n'intervient qu'ici, en **confirmation** : elle empêche un
+    objet franchement saturé mais bleu ou vert d'être pris pour de l'or. Elle
+    ne peut jamais, à elle seule, conclure — voir ``_famille_piece``.
+    """
+    return sat >= SEUIL_SAT_COLORE and _dans_bande_or(hue)
 
 
 def _famille_piece(
@@ -132,34 +182,69 @@ def _famille_piece(
 ) -> tuple[str, str | None]:
     """Famille + polarité depuis les statistiques de couleur.
 
-    Retourne aussi ``FAMILLE_INCONNUE`` (pièce trop sombre, trop mottée…).
+    **La saturation décide, la teinte confirme.** Mesuré sur les quatorze
+    pièces réelles de ``coins.jpg`` : la teinte est dégénérée — toutes les
+    pièces, or comme argent, tombent entre 4 et 28 (la seule exception, un
+    ½ DH à 126, est du bruit pur : sa saturation vaut 3). La saturation, elle,
+    sépare nettement :
+
+    =================  ==================
+    or (5c/10c/20c)    saturation 78 – 95
+    argent (½/1/2 DH)  saturation  3 – 15
+    bimétallique       une zone 39–66 face à l'autre 4–10
+    =================  ==================
+
+    C'est physique : la teinte d'une surface peu chromatique est le rapport
+    de deux quantités quasi nulles, donc numériquement instable. L'ancienne
+    règle interrogeait la teinte en premier et obtenait 11/14 ; elle ratait
+    les deux 5 DH (noyau de laiton à saturation 47 et 39, sous un plancher
+    fixé à 60) et un 10 DH (écart de teinte noyau/couronne de 9,6 seulement,
+    puisque comparer la teinte d'une zone argentée à celle d'une zone dorée
+    revient à comparer du bruit à un signal). La règle ci-dessous obtient
+    14/14 sur les mêmes pièces.
+
+    La couverture de teinte n'est consultée que sur une zone réellement
+    colorée : exiger l'homogénéité d'une teinte qui n'existe pas condamnait
+    les pièces argentées (mesuré : à saturation 2 et bruit σ = 5, 47 % des
+    tirages passent sous le plancher de couverture).
     """
-    if val_centre < SEUIL_VALEUR_SOMBRE or couv_centre < SEUIL_COUVERTURE:
+    if val_centre < SEUIL_VALEUR_SOMBRE:
         return FAMILLE_INCONNUE, None
-    ecart = _distance_teinte(hue_centre, hue_couronne)
-    est_or_centre = _dans_bande_or(hue_centre) and sat_centre >= SEUIL_SAT_METAL
-    est_or_couronne = _dans_bande_or(hue_couronne) and sat_couronne >= SEUIL_SAT_METAL
-    # le bimétallique exige une couronne réellement métallique : un fond
-    # sombre (< SEUIL_VALEUR_SOMBRE) ou une couronne trop mottée n'est pas
-    # un second métal — une pièce « or » seule sur fond sombre reste « or ».
-    couronne_reelle = (
-        val_couronne >= SEUIL_VALEUR_SOMBRE and couv_couronne >= SEUIL_COUVERTURE
-    )
+
+    centre_colore = sat_centre >= SEUIL_SAT_COLORE
+    couronne_reelle = val_couronne >= SEUIL_VALEUR_SOMBRE
+    couronne_coloree = couronne_reelle and sat_couronne >= SEUIL_SAT_COLORE
+
+    # Bimétallique : un CONTRASTE de saturation franc entre noyau et couronne,
+    # dont au moins une des deux zones est un métal coloré. C'est le signal
+    # robuste ; l'écart de teinte ne l'est pas (cf. docstring).
+    contraste = abs(sat_centre - sat_couronne)
     if (
         couronne_reelle
-        and ecart >= SEUIL_DIFF_BIMETAL
-        and (est_or_centre or est_or_couronne)
+        and contraste >= SEUIL_CONTRASTE_BIMETAL
+        and max(sat_centre, sat_couronne) >= SEUIL_SAT_COLORE
     ):
-        if est_or_centre and not est_or_couronne:
-            return FAMILLE_BIMETALLIQUE, POLARITE_CENTRE_OR
-        if est_or_couronne and not est_or_centre:
+        if sat_centre > sat_couronne:
+            # noyau coloré : encore faut-il que ce soit du laiton
+            if _est_laiton(hue_centre, sat_centre):
+                return FAMILLE_BIMETALLIQUE, POLARITE_CENTRE_OR
+        elif _est_laiton(hue_couronne, sat_couronne):
             return FAMILLE_BIMETALLIQUE, POLARITE_CENTRE_ARGENT
         return FAMILLE_BIMETALLIQUE, None
-    if est_or_centre:
-        return FAMILLE_OR, None
-    if sat_centre < SEUIL_SAT_METAL:
-        return FAMILLE_ARGENT, None
-    return FAMILLE_INCONNUE, None
+
+    if centre_colore:
+        # une pièce monométallique colorée doit être du laiton ; sinon la
+        # couleur est illisible (objet coloré, reflet) et on ne conclut pas
+        if _est_laiton(hue_centre, sat_centre) and couv_centre >= SEUIL_COUVERTURE:
+            return FAMILLE_OR, None
+        return FAMILLE_INCONNUE, None
+
+    # peu saturée au centre : métal clair. Si la couronne est, elle, un
+    # laiton franc sans atteindre le contraste exigé plus haut, on préfère
+    # ne pas trancher plutôt que d'annoncer « argent » à tort.
+    if couronne_coloree:
+        return FAMILLE_INCONNUE, None
+    return FAMILLE_ARGENT, None
 
 
 def _candidats(config: Config, fam: str, pol: str | None) -> list[Denomination]:
@@ -179,6 +264,27 @@ def _candidats(config: Config, fam: str, pol: str | None) -> list[Denomination]:
     return actifs
 
 
+def diametre_mesure(piece: PieceDetectee) -> float:
+    """Diamètre en pixels — estimateur **unique** de tout le projet.
+
+    Diamètre équivalent en aire, ``2·√(A/π)`` : le diamètre du disque de même
+    aire que la silhouette détectée. Il est invariant par rotation, moyenne
+    sur toute la surface (donc insensible à quelques pixels de bord) et ne
+    dépend d'aucun ajustement d'ellipse.
+
+    Il est surtout le **même** des deux côtés de la chaîne. Auparavant la
+    classification mesurait avec ``axe_majeur`` (ajustement d'ellipse) tandis
+    que l'étalonnage mesurait avec ``2·rayon`` (cercle circonscrit) : mesuré
+    sur les seize pièces réelles, les deux estimateurs diffèrent
+    systématiquement de −0,59 % ± 0,15 %, soit ~0,15 mm sur une pièce de
+    25 mm. C'est du même ordre que ``marge_classif`` (0,20 mm) : l'échelle
+    était donc biaisée par rapport à ce qu'elle servait à mesurer.
+    """
+    if piece.aire > 0.0:
+        return 2.0 * math.sqrt(piece.aire / math.pi)
+    return piece.diametre
+
+
 def _classer_taille(
     piece: PieceDetectee,
     fam: str,
@@ -187,14 +293,31 @@ def _classer_taille(
     px_par_mm: float,
 ) -> Classification:
     """Décision dimensionnelle — exige un étalonnage (``px_par_mm``)."""
-    diam_px = piece.axe_majeur if piece.axe_majeur is not None else piece.diametre
-    mm = diam_px / px_par_mm
+    mm = diametre_mesure(piece) / px_par_mm
     if not (config.portee_mm[0] <= mm <= config.portee_mm[1]):
         piece.motif_incertitude = "hors_portee"
         return Classification(None, "hors portée", -1.0, round(mm, 2), CERTITUDE_INCONNU)
     candidats = _candidats(config, fam, pol)
     if not candidats:
         return Classification(None, "inconnu", -1.0, round(mm, 2), CERTITUDE_INCONNU)
+    # Famille illisible : on refuse de conclure sur la seule taille.
+    #
+    # Mesure honnête sur le catalogue **corrigé** : aux diamètres nominaux,
+    # la taille seule suffit — aucune dénomination n'en recouvre une autre,
+    # c'est le bénéfice de la table assainie (écart minimal 2,00 mm dans une
+    # même famille, contre 0,20 mm avant correction). Le veto de couleur
+    # protège donc contre l'**erreur de mesure**, pas contre le catalogue :
+    # balayé à ±0,5 mm, un cas sur vingt bascule — un vrai 5 DH de 26,2 mm
+    # lu 26,7 mm est confirmé « 10 DH » sans le veto. En deçà de 0,4 mm
+    # d'erreur, aucun cas.
+    #
+    # Le garde-fou reste : une fausse valeur monétaire est strictement pire
+    # qu'une absence de valeur (docs/02 §5, « pas de mauvaise valeur, juste
+    # aucune »), et il ne coûte rien.
+    if fam == FAMILLE_INCONNUE:
+        return Classification(
+            None, "couleur illisible", -1.0, round(mm, 2), CERTITUDE_INCONNU
+        )
     notes = [
         (d, min(abs(mm - v) for v in d.variantes_mm), min(d.variantes_mm))
         for d in candidats

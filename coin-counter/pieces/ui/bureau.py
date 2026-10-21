@@ -27,7 +27,10 @@ from ..traitement import traiter_image
 
 __all__ = ["Bureau", "creer_capture", "ETIQUETTE_FENETRE"]
 
-ETIQUETTE_FENETRE = "coin-counter — somme des dinars marocains"
+ETIQUETTE_FENETRE = "coin-counter — somme des dirhams marocains"
+#: nombre de frames consécutivement fautives au-delà duquel on abandonne
+#: (une erreur isolée est un accident, cinquante sont une panne)
+ERREURS_MAX = 50
 
 
 def creer_capture(indice: int = 0) -> cv2.VideoCapture:
@@ -62,6 +65,7 @@ class Bureau:
         self.capture = capture
         self.afficher = bool(afficher)
         self._continuer = True
+        self._erreurs = 0
         #: dernière frame brute lue (pour l'export HUD en CLI)
         self.derniere_frame: cv2.typing.MatLike | None = None
 
@@ -82,15 +86,27 @@ class Bureau:
                 if not ok or frame is None:
                     break
                 self.derniere_frame = frame
-                dernier = traiter_image(frame, self.etat)
+                try:
+                    dernier = traiter_image(frame, self.etat)
+                    if self.afficher:
+                        hud = dessiner_hud(frame, dernier, self.etat)
+                        cv2.imshow(ETIQUETTE_FENETRE, hud)
+                except Exception as err:  # noqa: BLE001
+                    # Une frame pathologique ne doit pas emporter la session
+                    # entière : le total accumulé serait perdu. On la saute en
+                    # le signalant, et la boucle continue.
+                    self.etat.messages.append(f"frame ignorée : {err}")
+                    self._erreurs += 1
+                    if self._erreurs > ERREURS_MAX:
+                        raise
                 if self.afficher:
-                    hud = dessiner_hud(frame, dernier, self.etat)
-                    cv2.imshow(ETIQUETTE_FENETRE, hud)
-                    touche = cv2.waitKey(1) & 0xFF
-                    self._gerer_touche(touche)
+                    self._gerer_touche(cv2.waitKey(1) & 0xFF)
                 traite += 1
             return dernier
         finally:
+            # La capture est libérée ici ET par l'appelant : `release()` est
+            # idempotent, mais un Bureau reste à usage unique — un second
+            # `reel()` rendrait None en silence.
             if self.capture is not None and hasattr(self.capture, "release"):
                 self.capture.release()
             if self.afficher:

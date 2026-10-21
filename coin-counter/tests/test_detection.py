@@ -100,13 +100,36 @@ class TestMotifsDIncertitude:
         assert len(petits) == 1
         assert not petits[0].est_comptable
 
-    def test_trop_gros_ignore(self, image_pieces):
-        # cercle isolé de rayon 80 px ≫ portée 0.15·H → jamais compté
-        # (posé loin des 4 disques pour ne pas les recouvrir)
+    def test_trop_gros_detecte_mais_jamais_compte(self, image_pieces):
+        """Un objet trop gros est **vu**, puis écarté par la porte physique.
+
+        Ce test affirmait auparavant que le disque n'était pas détecté du
+        tout, et il passait — mais pour une mauvaise raison : son cercle,
+        posé en (30, 30) avec un rayon de 80, débordait du cadre aux deux
+        tiers. Replacé entièrement dans l'image, il était bel et bien
+        détecté, et l'assertion tombait. La porte qu'il prétendait vérifier
+        avait disparu sans que rien ne le signale.
+
+        Le contrat réel, et meilleur : un disque isolé plus grand que le
+        plafond de rayon n'est **pas** un chevauchement et n'est pas
+        escamoté — le faire disparaître coûtait de vraies pièces en gros
+        plan (mesuré sur ``jouet_6.jpg``). Il est rendu comme détection,
+        donc visible, mais c'est ``portee_mm`` — une porte en millimètres,
+        la seule qui ait un sens physique — qui l'empêche d'être compté.
+        """
         image = image_pieces.copy()
-        cv2.circle(image, (30, 30), 80, (200, 210, 230), -1, cv2.LINE_AA)
+        cv2.circle(image, (320, 240), 80, (200, 210, 230), -1, cv2.LINE_AA)
         resultat = detecter(image, CONFIG)
-        assert len(_valides(resultat)) == 4  # seuls les 4 disques survivent
+        valides = _valides(resultat)
+        assert len(valides) == 5  # les 4 disques + le gros objet
+
+        # … mais à une échelle plausible il sort de la portée et ne compte pas
+        from pieces.classification import classifier_pieces
+
+        classifier_pieces(resultat.pieces, image, CONFIG, px_par_mm=4.0)
+        gros = max(resultat.pieces, key=lambda p: p.rayon)
+        assert gros.motif_incertitude == "hors_portee"
+        assert gros.classification.valeur_centimes is None
 
 
 class TestChevauchement:

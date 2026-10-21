@@ -26,30 +26,77 @@ tout le reste reçoit une capture **injectée**.
 
 ## 2. Rendu HUD (`pieces/rendu.dessiner_hud`)
 
-- **Total** `TOTAL : 12,50 DH` + décompte `5 DH ×1  100c ×3  …`
+- **Total** `TOTAL : 37,00 DH` + décompte `1 DH ×2  2 DH ×2  …`
   (répartition par valeur consolidée de la session) ;
-- bandeau de synthèse : profil actif, échelle `4,0 px/mm` ou
-  « non calibré », temps/frame (`xx ms`) ;
+- bandeau de synthèse : profil actif, échelle `5,61 px/mm` — suivie de
+  **« (estimée) »** quand elle vient du catalogue et non d'une mesure, la
+  distinction ne devant jamais s'effacer — ou « non étalonné » ; durée
+  d'analyse et cadence correspondante ;
+- dernier message de session (étalonnage réussi ou refusé, remise à zéro).
+  Ces messages étaient produits et transportés jusqu'au rendu, mais jamais
+  dessinés : un étalonnage qui échouait ne disait rien à l'écran ;
 - chaque pièce : anneau coloré selon sa certitude
   `confirme` (vert) / `tentative` (jaune) / `inconnue` (orange) /
   motif d'incertitude (gris) ;
 - détail : le dessin part d'une **copie** (la frame d'entrée n'est jamais
-  modifiée), et la taille de police de `putText` suit la hauteur de la
-  frame (lisible à 720p).
+  modifiée) ; la taille de police suit la hauteur de la frame, bornée pour
+  rester lisible d'une petite capture à la 4K ; la hauteur du bandeau se
+  déduit du nombre de lignes à écrire, et le bloc de métrologie passe sous
+  le bloc principal quand le cadre est trop étroit pour deux colonnes.
+  Les libellés de pièce sont ramenés dans le cadre et tronqués au besoin —
+  `cv2.putText` ne sait ni couper ni replier, il écrivait simplement dans le
+  vide.
+
+`dessiner_hud_inventaire` rend la même surcouche pour une image fixe, sans
+notion de piste ni de session.
+
+La vignette du masque (touche `d`) est bornée aux dimensions réelles du
+cadre : sa taille se déduisait de celle du **masque** (échelle d'analyse) et
+était écrite telle quelle dans l'**image** (plein cadre), si bien qu'une
+simple pression sur `d` sur une petite capture levait
+`ValueError: could not broadcast input array` et tuait toute la session.
 
 ## 3. CLI (`python -m pieces.cli`)
 
 ```
---config JSON       fichier de configuration (défaut donnees/config.json)
---centimes          compter aussi les 10c/20c
---camera N          indice de la webcam (défaut 0)
---etalon-mm MM      diamètre réel de la pièce tenue (défaut 24,0 = 1 DH)
---limite N          borner le nombre de frames (CI)
---sortie PNG        écrire le HUD de la dernière frame puis arrêter
---sans-fenetre      autotest du pipeline, aucune webcam ni fenêtre
---image JPG         traiter une image statique (sorties/hud.png par défaut)
+--config JSON          fichier de configuration (défaut donnees/config.json)
+--image JPG            analyser une image fixe → inventaire, puis s'arrêter
+--camera N             session en direct sur la webcam d'indice N
+--sans-fenetre         autotest du pipeline (aucune caméra, vérité connue)
+--centimes             compter aussi les 5c/10c/20c
+--echelle-px-mm N      échelle MESURÉE, fournie (désactive l'estimation)
+--sans-auto-echelle    interdire l'estimation de l'échelle au catalogue
+--etalon-mm MM         diamètre réel de la pièce d'étalonnage (défaut 24,0)
+--limite N             borner le nombre de frames
+--sortie PNG           écrire le HUD
+--json FICHIER         rapport lisible par une machine
+--lister-pieces        détailler chaque pièce sur la sortie standard
 --version
 ```
+
+**Trois modes exclusifs**, et aucun par défaut. Lancer la commande nue
+affiche désormais un message et rend 2 : auparavant elle ouvrait la webcam 0
+et bouclait indéfiniment, sans la moindre sortie ni moyen d'arrêt autre
+qu'une interruption — une commande non interactive restait bloquée à pleine
+charge CPU.
+
+`--image` produit un **inventaire** (ce que l'image contient), `--camera` un
+**total suivi** (une pièce comptée une seule fois sur la durée). La
+distinction n'est pas cosmétique : le suivi exige plusieurs présences avant
+de compter, ce qu'une image unique ne peut structurellement pas fournir —
+`--image` rendait donc fatalement `0,00 DH`.
+
+`--sans-fenetre` **exécute réellement** la chaîne sur une scène de référence
+dont le total est connu par construction, et son code de sortie reflète
+l'état du pipeline. Il se contentait auparavant d'imprimer une phrase et de
+rendre 0, sans rien exécuter : il ne pouvait signaler aucune régression,
+alors qu'il était documenté comme « autotest du pipeline ».
+
+`--etalon-mm` est validé dès l'analyse des arguments (bornes 10–40 mm). Une
+valeur ≤ 0 faisait auparavant remonter une exception qui **terminait la
+session** — et perdait le total accumulé — à la première tentative
+d'étalonnage ; une valeur énorme bouclait en silence, l'échec n'étant écrit
+que dans un journal que le HUD n'affichait pas.
 
 Codes de sortie : `0` succès, `1` erreur caméra/runtime, `2` argument ou
 configuration invalide.
@@ -60,6 +107,7 @@ configuration invalide.
 make check     lint + suite de tests (porte principale)
 make perf      tests de performance (-m perf)
 make bench     tableau des temps d'exécution
+make autotest  autotest sans matériel         (python -m pieces.cli --sans-fenetre)
 make webcam    session en direct              (python -m pieces.cli --camera 0)
 make image     IMAGE=… traite une image        (python -m pieces.cli --image …)
 make capture   une frame enregistrée           (--limite 1 --sortie sorties/capture.png)
